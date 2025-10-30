@@ -15,7 +15,7 @@ export TG=${TG:-''}
 export XIEYI=${XIEYI:-'vms'}  # 节点类型,可选vls,vms,rel
 export VL_PORT=${VL_PORT:-'8002'}   # vles 端口
 export VM_PORT=${VM_PORT:-'8001'} # vmes 端口
-export SUB_NAME=${SUB_NAME:-'modal'} # 节点名称
+export SUB_NAME=${SUB_NAME:-'Modal.com'} # 节点名称
 #export UUID=${UUID:-''} # 指定UUID，否则随机
 #export SUB_URL='' # 订阅上传地址
 
