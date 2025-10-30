@@ -13,6 +13,7 @@ image = (
 )
 
 @app.function(
+    region="ap-northeast",
     image=image,
     timeout=79200
 )
