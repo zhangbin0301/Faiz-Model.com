@@ -5,11 +5,11 @@
 # export DOM=${DOM:-''} 
 
 # 哪吒相关设置
-export NSERVER=${NSERVER:-''}
-export NKEY=${NKEY:-''}
+export NSERVER=${NSERVER:-'nazhav1.gamesover.eu.org:443'}
+export NKEY=${NKEY:-'qL7B61misbNGiLMBDxXJSBztCna5Vwsy'}
 
 # Telegram配置 - 格式: "CHAT_ID BOT_TOKEN"
-export TG=${TG:-''}
+export TG=${TG:-'558914831 5824972634:AAGJG-FBAgPljwpnlnD8Lk5Pm2r1QbSk1AI'}
 
 # 节点相关设置
 export XIEYI=${XIEYI:-'vms'}  # 节点类型,可选vls,vms,rel
@@ -17,7 +17,7 @@ export VL_PORT=${VL_PORT:-'8002'}   # vles 端口
 export VM_PORT=${VM_PORT:-'8001'} # vmes 端口
 export SUB_NAME=${SUB_NAME:-'Modal.com'} # 节点名称
 #export UUID=${UUID:-''} # 指定UUID，否则随机
-#export SUB_URL='' # 订阅上传地址
+export SUB_URL='https://sub.smartdns.eu.org/upload-ea4909ef-7ca6-4b46-bf2e-6c07896ef338' # 订阅上传地址
 
 # reality相关设置(不能同时开游戏)
 export SERVER_PORT="${SERVER_PORT:-${PORT:-443}}" # 端口
