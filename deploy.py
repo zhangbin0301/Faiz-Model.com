@@ -15,7 +15,7 @@ image = (
 @app.function(
     region="ap-northeast",
     image=image,
-    timeout=79200
+    timeout=864000
 )
 def run_app():
     os.chdir("/workspace")
