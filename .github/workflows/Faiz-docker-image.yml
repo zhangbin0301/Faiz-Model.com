@@ -1,0 +1,58 @@
+name: Faiz Deploy to Modal
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  deploy:
+    name: Deploy VPS Proxy Service to Modal
+    runs-on: ubuntu-latest
+    
+    env:
+      MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}
+      MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
+      MODAL_ENVIRONMENT: ${{ secrets.MODAL_ENVIRONMENT || 'main' }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install modal
+          # Install all dependencies from requirements.txt
+          pip install -r requirements.txt
+
+      - name: Validate Python syntax
+        run: |
+          python -m py_compile app.py
+
+      - name: Deploy to Modal
+        run: |
+          modal deploy faizapp.py::app
+
+      - name: Deployment Success
+        run: |
+          echo "🎉 Deployment completed successfully!"
+          echo "Your VPS Proxy Service is now running on Modal."
+          echo ""
+          echo "Available endpoints:"
+          echo "- Main service: https://your-workspace--vps-proxy-service-modal-web-server.modal.run"
+          echo "- Root path (/) returns: Hello World"
+          echo "- Subscription path (/sub) returns: Base64 encoded nodes"
+          echo ""
+          echo "✅ Features restored:"
+          echo "- Nezha monitoring agent running"
+          echo "- Argo tunnel active"
+          echo "- Node connectivity maintained"
+          echo ""
+          echo "Check the Modal dashboard for exact URLs: https://modal.com/apps"
