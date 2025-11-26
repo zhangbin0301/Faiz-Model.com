@@ -1,4 +1,4 @@
-name: Deploy to Modal
+name: WL Deploy to Modal
 
 on:
   workflow_dispatch:
