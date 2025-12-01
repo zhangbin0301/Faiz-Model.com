@@ -34,7 +34,7 @@ jobs:
 
       - name: Validate Python syntax
         run: |
-          python -m py_compile app.py
+          python -m py_compile superapp.py
 
       - name: Deploy to Modal
         run: |
