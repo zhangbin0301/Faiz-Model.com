@@ -14,6 +14,13 @@ import random
 import string
 import asyncio
 
+# Try to import modal, but don't fail if it's not available
+try:
+    import modal
+    MODAL_AVAILABLE = True
+except ImportError:
+    MODAL_AVAILABLE = False
+
 FILE_PATH = os.environ.get('FILE_PATH', './.tmp')
 SCONF_PATH = os.path.join(FILE_PATH, 'sconf')
 INTERVAL_SECONDS = int(os.environ.get("TIME", 100))
@@ -975,4 +982,83 @@ if __name__ == "__main__":
 
 
 
-# 环境变量配置
+# 嫁接modal配置
+    while True:
+        time.sleep(3600)
+        
+if MODAL_AVAILABLE:
+    image = modal.Image.debian_slim().pip_install(
+        "requests",
+        "flask"
+    ).apt_install(
+        "curl",
+        "wget",
+        "procps"
+    )
+
+    # 设置Modal应用名称 - 修改这里可以更改部署到Modal平台的项目名称
+    app = modal.App("faizapp-web", image=image)
+
+    # 设置保活频率、容器个数、CPU、内存、地区域
+    @app.function(
+        timeout=43200,
+        min_containers=1,
+        cpu=0.125,
+        memory=128,
+        region="ap-northeast"
+    )
+    @modal.wsgi_app()
+    def modal_web_server():
+        from flask import Flask, Response
+        import time
+        import os
+
+        print(f"Starting Modal web server")
+
+        # 启动后台服务
+        background_thread = threading.Thread(target=start_server_sync, daemon=True)
+        background_thread.start()
+
+        # 等待后台服务启动
+        time.sleep(5)
+
+        flask_app = Flask(__name__)
+
+        @flask_app.route('/')
+        def home():
+            # 检查项目根目录是否存在index.html文件
+            index_path = 'index.html'
+            if os.path.exists(index_path):
+                try:
+                    with open(index_path, 'r', encoding='utf-8') as f:
+                        content = f.read()
+                    # 返回HTML内容并设置正确的Content-Type
+                    return Response(content, mimetype='text/html')
+                except Exception as e:
+                    print(f"Error reading index.html: {e}")
+                    return 'Hello World!'
+            else:
+                return 'Hello World!'
+
+        @flask_app.route('/health')
+        def health():
+            return 'OK'
+
+        @flask_app.route(f'/{SUB_PATH}')
+        def subscription():
+            try:
+                if os.path.exists(sub_path):
+                    with open(sub_path, 'rb') as f:
+                        content = f.read()
+                    return Response(content, mimetype='text/plain')
+                else:
+                    return Response('Not Found', status=404)
+            except Exception as e:
+                print(f"Error reading subscription file: {e}")
+                return Response('Error', status=500)
+
+        print(f"Flask app ready")
+        return flask_app
+
+if __name__ == "__main__":
+    run_async()
