@@ -981,6 +981,10 @@ if __name__ == "__main__":
     asyncio.run(main())
 
 
+def start_server_sync():
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(start_server())
 
 # 嫁接modal配置
     while True:
@@ -996,21 +1000,9 @@ if MODAL_AVAILABLE:
         "procps"
     )
 
-
-def start_server_sync():
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    loop.run_until_complete(start_server())
     
     # 设置Modal应用名称 - 修改这里可以更改部署到Modal平台的项目名称
-    #app = modal.App("superapp-web", image=image)
-
-from modal import App, Image
-# 'app' 在文件顶层定义
-image = Image.debian_slim().pip_install(...)
-app = App("superapp-web", image=image)    
-
-
+    app = modal.App("superapp-web", image=image)
 
     # 设置保活频率、容器个数、CPU、内存、地区域
     @app.function(
