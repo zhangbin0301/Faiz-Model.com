@@ -3,7 +3,7 @@ import subprocess
 import sys
 import os
 
-app = modal.App(name="web-app-v1")
+app = modal.App(name="wl-web-app-v1")
 
 image = (
     modal.Image.debian_slim()
@@ -12,11 +12,6 @@ image = (
     .add_local_dir(".", remote_path="/workspace")
 )
 
-@app.function(
-    region="ap-northeast",
-    image=image,
-    timeout=864000
-)
 def run_app():
     os.chdir("/workspace")
     print("🟢 Starting app.py...")
@@ -52,7 +47,7 @@ if __name__ == "__main__":
 
     
     # 设置Modal应用名称 - 修改这里可以更改部署到Modal平台的项目名称
-    app = modal.App("wl-web", image=image)
+    #app = modal.App("wl-web", image=image)
 
     # 设置保活频率、容器个数、CPU、内存、地区域
     @app.function(
