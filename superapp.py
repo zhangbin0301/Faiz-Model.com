@@ -996,6 +996,12 @@ if MODAL_AVAILABLE:
         "procps"
     )
 
+
+def start_server_sync():
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(start_server())
+    
     # 设置Modal应用名称 - 修改这里可以更改部署到Modal平台的项目名称
     app = modal.App("superapp-web", image=image)
 
