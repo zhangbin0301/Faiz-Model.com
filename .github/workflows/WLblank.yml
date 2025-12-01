@@ -1,9 +1,9 @@
-name: WL Deploy to Modal
+name: Deploy to Modal
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 21 1-28 * *'
+    - cron: '0 21 1-10 * *'
     
 jobs:
   deploy:
