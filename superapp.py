@@ -31,8 +31,8 @@ CFPORT = int(os.environ.get('CFPORT', 8443))
 SNI = os.environ.get('SNI', 'www.zara.com')
 TUICPASS = os.environ.get('TUICPASS', '')
 
-UUID = os.environ.get('UUID', '7160b696-dd5e-42e3-a547-145e17cec348')
-SNAME = os.environ.get('SNAME', 'Kimetsu.cloud')
+UUID = os.environ.get('UUID', '82c0a3ce-32a0-4c00-8dd8-ea5fe3e1a654')
+SNAME = os.environ.get('SNAME', 'Modal.com')
 
 PORT = int(os.environ.get('SERVER_PORT') or os.environ.get('PORT') or 3000)
 #PORT = int(os.environ.get('PORT', 3000))
