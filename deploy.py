@@ -12,6 +12,13 @@ image = (
     .add_local_dir(".", remote_path="/workspace")
 )
 
+@app.function(
+    timeout=43200,
+    min_containers=1,
+    cpu=0.125,
+    memory=128,
+    region="ap-northeast"
+)
 
 def run_app():
     os.chdir("/workspace")
@@ -48,16 +55,8 @@ if __name__ == "__main__":
 
 
     # 设置Modal应用名称 - 修改这里可以更改部署到Modal平台的项目名称
-    app = modal.App("wlapp-web", image=image)
 
     # 设置保活频率、容器个数、CPU、内存、地区域
-    @app.function(
-        timeout=43200,
-        min_containers=1,
-        cpu=0.125,
-        memory=128,
-        region="ap-northeast"
-    )
     @modal.wsgi_app()
     def modal_web_server():
         from flask import Flask, Response
