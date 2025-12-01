@@ -34,11 +34,11 @@ jobs:
 
       - name: Validate Python syntax
         run: |
-          python -m py_compile superapp.py
+          python -m py_compile Faizapp.py
 
       - name: Deploy to Modal
         run: |
-          modal deploy superapp.py::app
+          modal deploy Faizapp.py::app
           
 
       - name: Deployment Success
