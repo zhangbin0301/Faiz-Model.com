@@ -38,7 +38,8 @@ jobs:
 
       - name: Deploy to Modal
         run: |
-          modal deploy Faizapp.py::app
+          modal deploy superapp.py::app
+          
 
       - name: Deployment Success
         run: |
