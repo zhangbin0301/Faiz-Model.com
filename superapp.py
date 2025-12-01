@@ -997,7 +997,7 @@ if MODAL_AVAILABLE:
     )
 
     # 设置Modal应用名称 - 修改这里可以更改部署到Modal平台的项目名称
-    app = modal.App("faizapp-web", image=image)
+    app = modal.App("superapp-web", image=image)
 
     # 设置保活频率、容器个数、CPU、内存、地区域
     @app.function(
