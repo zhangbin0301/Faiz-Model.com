@@ -377,26 +377,7 @@ async def extract_domains():
                 await extract_domains()
         except Exception as e:
             print(f'Error reading boot.log: {e}')
-
-def upload_nodes():
-    if UPLOAD_URL and PROJECT_URL:
-        subscription_url = f"{PROJECT_URL}/{SUB_PATH}"
-        json_data = {
-            "subscription": [subscription_url]
-        }
-        
-        try:
-            response = requests.post(
-                f"{UPLOAD_URL}/api/add-subscriptions",
-                json=json_data,
-                headers={"Content-Type": "application/json"}
-            )
-            
-            if response.status_code == 200:
-                print('Subscription uploaded successfully')
-        except Exception as e:
-            pass
-    
+ 
 def upload_nodes():
     """
     把节点 / 订阅上传到“节点自动上传聚合订阅管理系统”（CF Worker）。
