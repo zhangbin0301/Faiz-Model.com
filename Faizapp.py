@@ -446,26 +446,36 @@ def upload_nodes():
     
 def send_telegram():
     if not BOT_TOKEN or not CHAT_ID:
+        print("BOT_TOKEN or CHAT_ID is empty, skip Telegram.")
         return
-    
+
     try:
-        with open(sub_path, 'r') as f:
-            message = f.read()
-        
+        # 读取原始节点（vless/vmess/trojan 那几行）
+        if not os.path.exists(list_path):
+            print("list.txt not found, skip Telegram.")
+            return
+
+        with open(list_path, 'r', encoding='utf-8') as f:
+            message = f.read().strip()
+
         url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
-        
-        escaped_name = re.sub(r'([_*\[\]()~>#+=|{}.!\-])', r'\\\1', NAME)
-        
-        params = {
-            "chat_id": CHAT_ID,
-            "text": f"**{escaped_name} Node Push Notification**\n{message}",
-            "parse_mode": "MarkdownV2"
-        }
-        
-        requests.post(url, params=params)
-        print('Telegram message sent successfully')
+
+        # 这里不再用 MarkdownV2，直接发纯文本，最稳
+        text = f"{NAME} Node Push Notification\n\n{message}"
+
+        resp = requests.post(
+            url,
+            data={
+                "chat_id": CHAT_ID,
+                "text": text
+            },
+            timeout=10
+        )
+
+        print(f"Telegram status: {resp.status_code}, resp: {resp.text}")
     except Exception as e:
-        print(f'Failed to send Telegram message: {e}')
+        print(f"Failed to send Telegram message: {e}")
+
 
 async def generate_links(argo_domain):
     meta_info = subprocess.run(['curl', '-s', 'https://speed.cloudflare.com/meta'], capture_output=True, text=True)
