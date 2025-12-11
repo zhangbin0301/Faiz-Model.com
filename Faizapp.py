@@ -473,7 +473,7 @@ def send_telegram():
             data={
                 "chat_id": CHAT_ID,
                 "text": text
-                "parse_mode": "HTML"   # ######关键：启用 HTML 格式
+                "parse_mode": "HTML"
             },
             timeout=10
         )
