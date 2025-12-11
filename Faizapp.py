@@ -480,7 +480,7 @@ async def generate_links(argo_domain):
     meta_info = meta_info.stdout.split('"')
     #ISP = f"{meta_info[25]}-{meta_info[17]}".replace(' ', '_').strip()
     #ISP = requests.get("https://ipconfig.netlib.re").content.decode("utf-8").strip()
-    ISP = requests.get("https://ipconfig.netlib.re", timeout=5).content.decode("utf-8").strip()
+    ISP = requests.get("https://ipconfig.de5.net", timeout=5).content.decode("utf-8").strip()
     
 
     time.sleep(2)
