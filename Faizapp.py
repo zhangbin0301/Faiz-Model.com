@@ -444,9 +444,6 @@ def upload_nodes():
         print(f"Upload error: {e}")
 
     
-import requests
-import os
-
 def send_telegram(title=None):
     if not BOT_TOKEN or not CHAT_ID:
         print("BOT_TOKEN or CHAT_ID is empty, skip Telegram.")
@@ -460,14 +457,14 @@ def send_telegram(title=None):
         with open(sub_path, 'r', encoding='utf-8') as f:
             message = f.read().strip()
 
-        # 标题格式：🇫🇷 法国 鲁贝-katabumpTEST节点链接
-        header = title if title else f"{ISP}-{NAME}节点链接"
+        # 标题格式：🇫🇷 法国 鲁贝-TEST节点链接
+        header = title if title else f"{NAME}节点链接"
 
         url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
 
         text = (
             f"<b>{header}</b>\n"
-            f"<code>                                        </code>\n"
+            f"<code>                                             </code>\n" #推送TG标题和节点信息之前的分隔符
             f"<pre>{message}</pre>"
         )
 
@@ -486,6 +483,7 @@ def send_telegram(title=None):
     except Exception as e:
         print(f"Failed to send Telegram message: {e}")
         return
+
 
 
 
@@ -518,8 +516,10 @@ vless://{UUID}@{CFIP}:{CFPORT}?encryption=none&security=tls&sni={argo_domain}&fp
     
     print(f"{FILE_PATH}/sub.txt saved successfully")
 
-    send_telegram()
+    header = f"{ISP}-{NAME}节点链接"
+    send_telegram(header)   # ✅ 把标题传给 send_telegram
     upload_nodes()
+
 
     return sub_txt
 
