@@ -377,82 +377,122 @@ async def extract_domains():
                 await extract_domains()
         except Exception as e:
             print(f'Error reading boot.log: {e}')
-
+ 
 def upload_nodes():
-    if UPLOAD_URL and PROJECT_URL:
-        subscription_url = f"{PROJECT_URL}/{SUB_PATH}"
-        json_data = {
-            "subscription": [subscription_url]
+    """
+    把节点 / 订阅上传到“节点自动上传聚合订阅管理系统”（CF Worker）。
+    
+    Worker 端期待的格式是：
+        POST https://域名/upload-UP
+        JSON: { "URL_NAME": "名字", "URL": "内容或订阅链接" }
+    """
+    if not UPLOAD_URL:
+        return
+
+    # 优先：如果有 PROJECT_URL，就直接上传订阅地址
+    # 这样 Worker 每次拉订阅时，会主动去抓你的 /sub 内容，自动展开最新节点
+    if PROJECT_URL:
+        subscription_url = f"{PROJECT_URL.rstrip('/')}/{SUB_PATH}"
+        payload = {
+            "URL_NAME": NAME,          # 在面板上显示的名称，随便起
+            "URL": subscription_url    # 这里直接给订阅链接，让 Worker 去抓
         }
-        
         try:
-            response = requests.post(
-                f"{UPLOAD_URL}/api/add-subscriptions",
-                json=json_data,
-                headers={"Content-Type": "application/json"}
+            resp = requests.post(
+                UPLOAD_URL,
+                json=payload,
+                headers={"Content-Type": "application/json"},
+                timeout=10
             )
-            
-            if response.status_code == 200:
-                print('Subscription uploaded successfully')
+            if resp.status_code == 200:
+                print("Subscription URL uploaded successfully")
+            else:
+                print(f"Upload failed, status: {resp.status_code}, text: {resp.text}")
         except Exception as e:
-            pass
-    
-    elif UPLOAD_URL:
-        if not os.path.exists(list_path):
-            return
-        
-        with open(list_path, 'r') as f:
-            content = f.read()
-        
-        nodes = [line for line in content.split('\n') if any(protocol in line for protocol in ['vless://', 'vmess://', 'trojan://', 'hysteria2://', 'tuic://'])]
-        
-        if not nodes:
-            return
-        
-        json_data = json.dumps({"nodes": nodes})
-        
-        try:
-            response = requests.post(
-                f"{UPLOAD_URL}/api/add-nodes",
-                data=json_data,
-                headers={"Content-Type": "application/json"}
-            )
-            
-            if response.status_code == 200:
-                print('Nodes uploaded successfully')
-        except:
-            return None
-    else:
+            print(f"Upload error: {e}")
         return
-    
-def send_telegram():
-    if not BOT_TOKEN or not CHAT_ID:
+
+    # 否则：没有 PROJECT_URL，就直接上传节点内容（list.txt 里的那一大坨）
+    if not os.path.exists(list_path):
         return
-    
+
     try:
-        with open(sub_path, 'r') as f:
-            message = f.read()
-        
-        url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
-        
-        escaped_name = re.sub(r'([_*\[\]()~>#+=|{}.!\-])', r'\\\1', NAME)
-        
-        params = {
-            "chat_id": CHAT_ID,
-            "text": f"**{escaped_name} Node Push Notification**\n{message}",
-            "parse_mode": "MarkdownV2"
-        }
-        
-        requests.post(url, params=params)
-        print('Telegram message sent successfully')
+        with open(list_path, 'r', encoding='utf-8') as f:
+            content = f.read()
     except Exception as e:
-        print(f'Failed to send Telegram message: {e}')
+        print(f"read list.txt error: {e}")
+        return
+
+    # 这里直接把整段文本丢给 Worker，它后面会按行拆成多条节点
+    payload = {
+        "URL_NAME": NAME,
+        "URL": content
+    }
+
+    try:
+        resp = requests.post(
+            UPLOAD_URL,
+            json=payload,
+            headers={"Content-Type": "application/json"},
+            timeout=10
+        )
+        if resp.status_code == 200:
+            print("Nodes uploaded successfully")
+        else:
+            print(f"Upload failed, status: {resp.status_code}, text: {resp.text}")
+    except Exception as e:
+        print(f"Upload error: {e}")
+
+    
+def send_telegram(title=None):
+    if not BOT_TOKEN or not CHAT_ID:
+        print("BOT_TOKEN or CHAT_ID is empty, skip Telegram.")
+        return
+
+    try:
+        if not os.path.exists(sub_path):
+            print("sub.txt not found, skip Telegram.")
+            return
+
+        with open(sub_path, 'r', encoding='utf-8') as f:
+            message = f.read().strip()
+
+        # 标题格式：🇫🇷 法国 鲁贝-TEST节点链接
+        header = title if title else f"{NAME}节点链接"
+
+        url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+
+        text = (
+            f"<b>{header}</b>\n"
+            f"<code>                                             </code>\n" #推送TG标题和节点信息之前的分隔符
+            f"<pre>{message}</pre>"
+        )
+
+        resp = requests.post(
+            url,
+            data={
+                "chat_id": CHAT_ID,
+                "text": text,
+                "parse_mode": "HTML"
+            },
+            timeout=10
+        )
+
+        print(f"Telegram status: {resp.status_code}, resp: {resp.text}")
+
+    except Exception as e:
+        print(f"Failed to send Telegram message: {e}")
+        return
+
+
+
 
 async def generate_links(argo_domain):
     meta_info = subprocess.run(['curl', '-s', 'https://speed.cloudflare.com/meta'], capture_output=True, text=True)
     meta_info = meta_info.stdout.split('"')
-    ISP = f"{meta_info[25]}-{meta_info[17]}".replace(' ', '_').strip()
+    #ISP = f"{meta_info[25]}-{meta_info[17]}".replace(' ', '_').strip()
     #ISP = requests.get("https://ipconfig.netlib.re").content.decode("utf-8").strip()
+    ISP = requests.get("https://ipconfig.de5.net", timeout=5).content.decode("utf-8").strip()
     
 
     time.sleep(2)
@@ -461,9 +501,8 @@ async def generate_links(argo_domain):
     list_txt = f"""
 vless://{UUID}@{CFIP}:{CFPORT}?encryption=none&security=tls&sni={argo_domain}&fp=chrome&type=ws&host={argo_domain}&path=%2Fvless-argo%3Fed%3D2560#{ISP}-{NAME}
 
-#vmess://{ base64.b64encode(json.dumps(VMESS).encode('utf-8')).decode('utf-8')}
 
-#trojan://{UUID}@{CFIP}:{CFPORT}?security=tls&sni={argo_domain}&fp=chrome&type=ws&host={argo_domain}&path=%2Ftrojan-argo%3Fed%3D2560#{ISP}-{NAME}
+
     """
     
     with open(os.path.join(FILE_PATH, 'list.txt'), 'w', encoding='utf-8') as list_file:
@@ -477,8 +516,10 @@ vless://{UUID}@{CFIP}:{CFPORT}?encryption=none&security=tls&sni={argo_domain}&fp
     
     print(f"{FILE_PATH}/sub.txt saved successfully")
 
-    send_telegram()
+    header = f"{ISP}-{NAME}节点链接"
+    send_telegram(header)   # ✅ 把标题传给 send_telegram
     upload_nodes()
+
 
     return sub_txt
 
