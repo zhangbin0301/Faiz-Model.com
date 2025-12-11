@@ -444,7 +444,10 @@ def upload_nodes():
         print(f"Upload error: {e}")
 
     
-def send_telegram():
+import requests
+import os
+
+def send_telegram(title=None):
     if not BOT_TOKEN or not CHAT_ID:
         print("BOT_TOKEN or CHAT_ID is empty, skip Telegram.")
         return
@@ -455,33 +458,35 @@ def send_telegram():
             return
 
         with open(sub_path, 'r', encoding='utf-8') as f:
-            message = f.read().strip()      
+            message = f.read().strip()
 
         # 标题格式：🇫🇷 法国 鲁贝-katabumpTEST节点链接
-        header = title if title else f"{ISP}-{NAME} 节点链接"
+        header = title if title else f"{ISP}-{NAME}节点链接"
+
         url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
 
-        # Telegram HTML 格式：标题 + 分隔线 + <pre>代码框>
         text = (
             f"<b>{header}</b>\n"
             f"<code>                                        </code>\n"
             f"<pre>{message}</pre>"
         )
-       
+
         resp = requests.post(
             url,
             data={
                 "chat_id": CHAT_ID,
-                "text": text
+                "text": text,
                 "parse_mode": "HTML"
             },
             timeout=10
         )
 
         print(f"Telegram status: {resp.status_code}, resp: {resp.text}")
+
     except Exception as e:
         print(f"Failed to send Telegram message: {e}")
         return
+
 
 
 async def generate_links(argo_domain):
