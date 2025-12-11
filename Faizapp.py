@@ -455,16 +455,25 @@ def send_telegram():
             return
 
         with open(sub_path, 'r', encoding='utf-8') as f:
-            message = f.read().strip()
+            message = f.read().strip()      
 
+        # 标题格式：🇫🇷 法国 鲁贝-katabumpTEST节点链接
+        header = title if title else f"{ISP}-{NAME} 节点链接"
         url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
-        text = f"{NAME} Node Push Notification\n\n{message}"
 
+        # Telegram HTML 格式：标题 + 分隔线 + <pre>代码框>
+        text = (
+            f"<b>{header}</b>\n"
+            f"<code>                                        </code>\n"
+            f"<pre>{message}</pre>"
+        )
+       
         resp = requests.post(
             url,
             data={
                 "chat_id": CHAT_ID,
                 "text": text
+                "parse_mode": "HTML"   # ######关键：启用 HTML 格式
             },
             timeout=10
         )
