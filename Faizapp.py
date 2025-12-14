@@ -464,7 +464,7 @@ def send_telegram(title=None):
 
         text = (
             f"<b>{header}</b>\n"
-            f"<code>                                             </code>\n" #推送TG标题和节点信息之前的分隔符
+            #f"<code>                                             </code>\n" #推送TG标题和节点信息之前的分隔符
             f"<pre>{message}</pre>"
         )
 
