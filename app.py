@@ -379,57 +379,51 @@ async def extract_domains():
             print(f'Error reading boot.log: {e}')
 
 def upload_nodes():
-    """  
-    优先上传 sub_path（sub.txt / sub.base64 等订阅文件）的内容
-    如果 sub_path 不存在或为空，则上传 list_path 的原始节点内容    
-    期待 JSON: { "URL_NAME": "名字", "URL": "一大坨内容" }
+    """
+    把节点 / 订阅上传到“节点自动上传聚合订阅管理系统”。
+    
+    Worker 端期待的格式是：
+        POST https://域名/upload-UP
+        JSON: { "URL_NAME": "名字", "URL": "内容或订阅链接" }
     """
     if not UPLOAD_URL:
         return
 
-    # --------------------- 优先：上传 sub_path 内容（推荐） ---------------------
-    if os.path.exists(sub_path):
+    # 优先：如果有 PROJECT_URL，就直接上传订阅地址
+    # 这样 Worker 每次拉订阅时，会主动去抓你的 /sub 内容，自动展开最新节点
+    if PROJECT_URL:
+        subscription_url = f"{PROJECT_URL.rstrip('/')}/{SUB_PATH}"
+        payload = {
+            "URL_NAME": NAME,          # 在面板上显示的名称，随便起
+            "URL": subscription_url    # 这里直接给订阅链接，让 Worker 去抓
+        }
         try:
-            with open(sub_path, 'r', encoding='utf-8') as f:
-                content = f.read().strip()
-            if content:  # 非空才上传
-                payload = {
-                    "URL_NAME": NAME,
-                    "URL": content
-                }
-                try:
-                    resp = requests.post(
-                        UPLOAD_URL,
-                        json=payload,
-                        headers={"Content-Type": "application/json"},
-                        timeout=15
-                    )
-                    if resp.status_code == 200:
-                        print("Subscription content (sub_path) uploaded successfully")
-                    else:
-                        print(f"Upload failed (sub_path), status: {resp.status_code}, response: {resp.text}")
-                except Exception as e:
-                    print(f"Upload error (sub_path): {e}")
-                return  # 成功上传 sub_path 后直接结束
+            resp = requests.post(
+                UPLOAD_URL,
+                json=payload,
+                headers={"Content-Type": "application/json"},
+                timeout=10
+            )
+            if resp.status_code == 200:
+                print("Subscription URL uploaded successfully")
+            else:
+                print(f"Upload failed, status: {resp.status_code}, text: {resp.text}")
         except Exception as e:
-            print(f"Read sub_path error: {e}")
+            print(f"Upload error: {e}")
+        return
 
-    # --------------------- 备选：上传 list_path 原始节点内容 ---------------------
+    # 否则：没有 PROJECT_URL，就直接上传节点内容（list.txt 里的那一大坨）
     if not os.path.exists(list_path):
-        print("list_path not found, skip upload")
         return
 
     try:
         with open(list_path, 'r', encoding='utf-8') as f:
-            content = f.read().strip()
+            content = f.read()
     except Exception as e:
-        print(f"Read list_path error: {e}")
+        print(f"read list.txt error: {e}")
         return
 
-    if not content:
-        print("list_path is empty, skip upload")
-        return
-
+    # 这里直接把整段文本丢给 Worker，它后面会按行拆成多条节点
     payload = {
         "URL_NAME": NAME,
         "URL": content
@@ -440,39 +434,44 @@ def upload_nodes():
             UPLOAD_URL,
             json=payload,
             headers={"Content-Type": "application/json"},
-            timeout=15
+            timeout=10
         )
         if resp.status_code == 200:
-            print("Nodes content (list_path) uploaded successfully")
+            print("Nodes uploaded successfully")
         else:
-            print(f"Upload failed (list_path), status: {resp.status_code}, response: {resp.text}")
+            print(f"Upload failed, status: {resp.status_code}, text: {resp.text}")
     except Exception as e:
-        print(f"Upload error (list_path): {e}")
+        print(f"Upload error: {e}")
 
 
     
 def send_telegram():
     if not BOT_TOKEN or not CHAT_ID:
         return
-    
+   
     try:
-        with open(sub_path, 'r') as f:
-            message = f.read()
+        with open(sub_path, 'r', encoding='utf-8') as f:
+            message = f.read().strip()
         
+        if not message:
+            print("Subscription content is empty, skip sending Telegram")
+            return
+       
         url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
-        
-        escaped_name = re.sub(r'([_*\[\]()~>#+=|{}.!\-])', r'\\\1', NAME)
-        escaped_isp = re.sub(r'([_*\[\]()~>#+=|{}.!\-])', r'\\\1', ISP)
-
-        # 推荐格式：名字 (ISP)
-        title = f"{escaped_isp} \\({escaped_name}\\)"
-        
+       
+        # 直接拼接：ISP-节点名 Node Push Notification（去掉括号）
+        # 如果 ISP 为空，就只显示 NAME
+        if ISP:
+            title = f"{ISP}-{NAME} Node Push Notification"
+        else:
+            title = f"{NAME} Node Push Notification"
+       
         params = {
             "chat_id": CHAT_ID,
-            "text": f"**{title} Node Push Notification**\n{message}",
+            "text": f"{title}\n\n```{message}```",
             "parse_mode": "MarkdownV2"
         }
-        
+       
         requests.post(url, params=params)
         print('Telegram message sent successfully')
     except Exception as e:
