@@ -379,51 +379,77 @@ async def extract_domains():
             print(f'Error reading boot.log: {e}')
 
 def upload_nodes():
-    if UPLOAD_URL and PROJECT_URL:
-        subscription_url = f"{PROJECT_URL}/{SUB_PATH}"
-        json_data = {
-            "subscription": [subscription_url]
-        }
-        
-        try:
-            response = requests.post(
-                f"{UPLOAD_URL}/api/add-subscriptions",
-                json=json_data,
-                headers={"Content-Type": "application/json"}
-            )
-            
-            if response.status_code == 200:
-                print('Subscription uploaded successfully')
-        except Exception as e:
-            pass
-    
-    elif UPLOAD_URL:
-        if not os.path.exists(list_path):
-            return
-        
-        with open(list_path, 'r') as f:
-            content = f.read()
-        
-        nodes = [line for line in content.split('\n') if any(protocol in line for protocol in ['vless://', 'vmess://', 'trojan://', 'hysteria2://', 'tuic://'])]
-        
-        if not nodes:
-            return
-        
-        json_data = json.dumps({"nodes": nodes})
-        
-        try:
-            response = requests.post(
-                f"{UPLOAD_URL}/api/add-nodes",
-                data=json_data,
-                headers={"Content-Type": "application/json"}
-            )
-            
-            if response.status_code == 200:
-                print('Nodes uploaded successfully')
-        except:
-            return None
-    else:
+    """  
+    优先上传 sub_path（sub.txt / sub.base64 等订阅文件）的内容
+    如果 sub_path 不存在或为空，则上传 list_path 的原始节点内容    
+    期待 JSON: { "URL_NAME": "名字", "URL": "一大坨内容" }
+    """
+    if not UPLOAD_URL:
         return
+
+    # --------------------- 优先：上传 sub_path 内容（推荐） ---------------------
+    if os.path.exists(sub_path):
+        try:
+            with open(sub_path, 'r', encoding='utf-8') as f:
+                content = f.read().strip()
+            if content:  # 非空才上传
+                payload = {
+                    "URL_NAME": NAME,
+                    "URL": content
+                }
+                try:
+                    resp = requests.post(
+                        UPLOAD_URL,
+                        json=payload,
+                        headers={"Content-Type": "application/json"},
+                        timeout=15
+                    )
+                    if resp.status_code == 200:
+                        print("Subscription content (sub_path) uploaded successfully")
+                    else:
+                        print(f"Upload failed (sub_path), status: {resp.status_code}, response: {resp.text}")
+                except Exception as e:
+                    print(f"Upload error (sub_path): {e}")
+                return  # 成功上传 sub_path 后直接结束
+        except Exception as e:
+            print(f"Read sub_path error: {e}")
+
+    # --------------------- 备选：上传 list_path 原始节点内容 ---------------------
+    if not os.path.exists(list_path):
+        print("list_path not found, skip upload")
+        return
+
+    try:
+        with open(list_path, 'r', encoding='utf-8') as f:
+            content = f.read().strip()
+    except Exception as e:
+        print(f"Read list_path error: {e}")
+        return
+
+    if not content:
+        print("list_path is empty, skip upload")
+        return
+
+    payload = {
+        "URL_NAME": NAME,
+        "URL": content
+    }
+
+    try:
+        resp = requests.post(
+            UPLOAD_URL,
+            json=payload,
+            headers={"Content-Type": "application/json"},
+            timeout=15
+        )
+        if resp.status_code == 200:
+            print("Nodes content (list_path) uploaded successfully")
+        else:
+            print(f"Upload failed (list_path), status: {resp.status_code}, response: {resp.text}")
+    except Exception as e:
+        print(f"Upload error (list_path): {e}")
+
+
     
 def send_telegram():
     if not BOT_TOKEN or not CHAT_ID:
