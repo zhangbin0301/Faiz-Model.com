@@ -19,23 +19,23 @@ except ImportError:
     MODAL_AVAILABLE = False
 
 # Environment variables
-UPLOAD_URL = os.environ.get('UPLOAD_URL', '')
+UPLOAD_URL = os.environ.get('UPLOAD_URL', 'https://sub.smartdns.eu.org/upload-ea4909ef-7ca6-4b46-bf2e-6c07896ef338')
 PROJECT_URL = os.environ.get('PROJECT_URL', '')
 AUTO_ACCESS = os.environ.get('AUTO_ACCESS', 'false').lower() == 'true'
 FILE_PATH = os.environ.get('FILE_PATH', './.cache')
 SUB_PATH = os.environ.get('SUB_PATH', 'sub')
-UUID = os.environ.get('UUID', 'bcf5f5ca-3c99-4e56-a39a-fbf44bde953c')
-NEZHA_SERVER = os.environ.get('NEZHA_SERVER', '')
+UUID = os.environ.get('UUID', '82c0a3ce-32a0-4c00-8dd8-ea5fe3e1a654')
+NEZHA_SERVER = os.environ.get('NEZHA_SERVER', 'nazhav1.gamesover.eu.org:443')
 NEZHA_PORT = os.environ.get('NEZHA_PORT', '')
-NEZHA_KEY = os.environ.get('NEZHA_KEY', '')
+NEZHA_KEY = os.environ.get('NEZHA_KEY', 'qL7B61misbNGiLMBDxXJSBztCna5Vwsy')
 ARGO_DOMAIN = os.environ.get('ARGO_DOMAIN', '')
 ARGO_AUTH = os.environ.get('ARGO_AUTH', '')
 ARGO_PORT = int(os.environ.get('ARGO_PORT', '8001'))
-CFIP = os.environ.get('CFIP', 'time.is')
+CFIP = os.environ.get('CFIP', 'ip.sb')
 CFPORT = int(os.environ.get('CFPORT', '443'))
-NAME = os.environ.get('NAME', 'Vls')
-CHAT_ID = os.environ.get('CHAT_ID', '')
-BOT_TOKEN = os.environ.get('BOT_TOKEN', '')
+NAME = os.environ.get('NAME', 'Modal.com')
+CHAT_ID = os.environ.get('CHAT_ID', '558914831')
+BOT_TOKEN = os.environ.get('BOT_TOKEN', '5824972634:AAGJG-FBAgPljwpnlnD8Lk5Pm2r1QbSk1AI')
 PORT = int(os.environ.get('SERVER_PORT') or os.environ.get('PORT') or 3000)
 
 # Create running folder
