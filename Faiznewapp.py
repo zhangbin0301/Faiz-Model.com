@@ -436,10 +436,14 @@ def send_telegram():
         url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
         
         escaped_name = re.sub(r'([_*\[\]()~>#+=|{}.!\-])', r'\\\1', NAME)
+        escaped_isp = re.sub(r'([_*\[\]()~>#+=|{}.!\-])', r'\\\1', ISP)
+
+        # 推荐格式：名字 (ISP)
+        title = f"{escaped_isp} \\({escaped_name}\\)"
         
         params = {
             "chat_id": CHAT_ID,
-            "text": f"**{escaped_name} Node Push Notification**\n{message}",
+            "text": f"**{title} Node Push Notification**\n{message}",
             "parse_mode": "MarkdownV2"
         }
         
