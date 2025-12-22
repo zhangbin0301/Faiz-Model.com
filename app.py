@@ -380,7 +380,7 @@ async def extract_domains():
 
 def upload_nodes():
     """
-    把节点 / 订阅上传到“节点自动上传聚合订阅管理系统”。
+    把节点 / 订阅上传到“节点自动上传聚合订阅管理系统”（CF Worker）。
     
     Worker 端期待的格式是：
         POST https://域名/upload-UP
@@ -443,39 +443,46 @@ def upload_nodes():
     except Exception as e:
         print(f"Upload error: {e}")
 
-
     
-def send_telegram():
+def send_telegram(title=None):
     if not BOT_TOKEN or not CHAT_ID:
+        print("BOT_TOKEN or CHAT_ID is empty, skip Telegram.")
         return
-   
+
     try:
+        if not os.path.exists(sub_path):
+            print("sub.txt not found, skip Telegram.")
+            return
+
         with open(sub_path, 'r', encoding='utf-8') as f:
             message = f.read().strip()
-        
-        if not message:
-            print("Subscription content is empty, skip sending Telegram")
-            return
-       
+
+        # 标题格式：🇫🇷 法国 鲁贝-TEST节点链接
+        header = title if title else f"{NAME}节点链接"
+
         url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
-       
-        # 直接拼接：ISP-节点名 Node Push Notification（去掉括号）
-        # 如果 ISP 为空，就只显示 NAME
-        if ISP:
-            title = f"{ISP}-{NAME} Node Push Notification"
-        else:
-            title = f"{NAME} Node Push Notification"
-       
-        params = {
-            "chat_id": CHAT_ID,
-            "text": f"{title}\n\n```{message}```",
-            "parse_mode": "MarkdownV2"
-        }
-       
-        requests.post(url, params=params)
-        print('Telegram message sent successfully')
+
+        text = (
+            f"<b>{header}</b>\n"            
+            f"<pre>{message}</pre>"
+        )
+
+        resp = requests.post(
+            url,
+            data={
+                "chat_id": CHAT_ID,
+                "text": text,
+                "parse_mode": "HTML"
+            },
+            timeout=10
+        )
+
+        print(f"Telegram status: {resp.status_code}, resp: {resp.text}")
+
     except Exception as e:
-        print(f'Failed to send Telegram message: {e}')
+        print(f"Failed to send Telegram message: {e}")
+        return
+
 
 async def generate_links(argo_domain):
     global ISP # ← 申明ISP是全局！关键！！
@@ -512,7 +519,8 @@ vmess://{ base64.b64encode(json.dumps(VMESS).encode('utf-8')).decode('utf-8')}
     
     print(f"{FILE_PATH}/sub.txt saved successfully")
 
-    send_telegram()
+    header = f"{ISP}-{NAME}节点链接"
+    send_telegram(header)   # ✅ 把标题传给 send_telegram
     upload_nodes()
 
     return sub_txt
