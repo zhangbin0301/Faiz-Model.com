@@ -453,6 +453,8 @@ def send_telegram():
         print(f'Failed to send Telegram message: {e}')
 
 async def generate_links(argo_domain):
+    global ISP # ← 申明ISP是全局！关键！！
+    
     try:
         result = subprocess.run(
             ['curl', '-sm', '3', '-H', 'User-Agent: Mozilla/5.0', 'https://api.ip.sb/geoip'],
