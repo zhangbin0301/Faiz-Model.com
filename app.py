@@ -457,14 +457,22 @@ def send_telegram(title=None):
         with open(sub_path, 'r', encoding='utf-8') as f:
             message = f.read().strip()
 
-        # 标题格式：🇫🇷 法国 鲁贝-TEST节点链接
+        # MarkdownV2 需要转义特殊字符
+        def escape_md(text):
+            escape_chars = r"_*[]()~`>#+-=|{}.!"
+            for ch in escape_chars:
+                text = text.replace(ch, f"\\{ch}")
+            return text
+
         header = title if title else f"{NAME}节点链接"
+        header = escape_md(header)
+        message = escape_md(message)
 
         url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
 
         text = (
-            f"<b>{header}</b>\n"            
-            f"<pre>{message}</pre>"
+            f"*{header}*\n"
+            f"```\n{message}\n```"
         )
 
         resp = requests.post(
@@ -472,7 +480,7 @@ def send_telegram(title=None):
             data={
                 "chat_id": CHAT_ID,
                 "text": text,
-                "parse_mode": "HTML"
+                "parse_mode": "MarkdownV2"
             },
             timeout=10
         )
