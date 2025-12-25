@@ -472,7 +472,7 @@ def send_telegram(title=None):
 
         text = (
             f"*{header}*\n"
-            f"```text\n{message}\n```"
+            f"```拷贝\n{message}\n```"
         )
 
         resp = requests.post(
