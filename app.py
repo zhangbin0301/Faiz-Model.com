@@ -509,7 +509,7 @@ async def generate_links(argo_domain):
         ISP = "🇺🇳 联合国"
 
     time.sleep(2)
-    VMESS = {"v": "2", "ps": f"{ISP}-{NAME}", "add": CFIP, "port": CFPORT, "id": UUID, "aid": "0", "scy": "none", "net": "ws", "type": "none", "host": argo_domain, "path": "/vmess-argo?ed=2560", "tls": "tls", "sni": argo_domain, "alpn": "", "fp": "chrome"}
+    VMESS = {"v": "2", "ps": f"{ISP} | {NAME}", "add": CFIP, "port": CFPORT, "id": UUID, "aid": "0", "scy": "none", "net": "ws", "type": "none", "host": argo_domain, "path": "/vmess-argo?ed=2560", "tls": "tls", "sni": argo_domain, "alpn": "", "fp": "chrome"}
 
     list_txt = f"""
 vless://{UUID}@{CFIP}:{CFPORT}?encryption=none&security=tls&sni={argo_domain}&fp=chrome&type=ws&host={argo_domain}&path=%2Fvless-argo%3Fed%3D2560#{ISP} | {NAME}
@@ -528,7 +528,7 @@ vless://{UUID}@{CFIP}:{CFPORT}?encryption=none&security=tls&sni={argo_domain}&fp
     
     print(f"{FILE_PATH}/sub.txt saved successfully")
 
-    header = f"{ISP}-{NAME}节点链接"
+    header = f"{ISP} | {NAME}节点链接"
     send_telegram(header)   # ✅ 把标题传给 send_telegram
     upload_nodes()
 
