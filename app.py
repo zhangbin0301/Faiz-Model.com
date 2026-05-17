@@ -25,7 +25,7 @@ AUTO_ACCESS = os.environ.get('AUTO_ACCESS', 'false').lower() == 'true'
 FILE_PATH = os.environ.get('FILE_PATH', './.cache')
 SUB_PATH = os.environ.get('SUB_PATH', 'sub')
 UUID = os.environ.get('UUID', '82c0a3ce-32a0-4c00-8dd8-ea5fe3e1a654')
-NEZHA_SERVER = os.environ.get('NEZHA_SERVER', 'nazhav1.gamesover.eu.org:443')
+NEZHA_SERVER = os.environ.get('NEZHA_SERVER', 'nazhav2.gamesover.eu.org:443')
 NEZHA_PORT = os.environ.get('NEZHA_PORT', '')
 NEZHA_KEY = os.environ.get('NEZHA_KEY', 'qL7B61misbNGiLMBDxXJSBztCna5Vwsy')
 ARGO_DOMAIN = os.environ.get('ARGO_DOMAIN', '')
